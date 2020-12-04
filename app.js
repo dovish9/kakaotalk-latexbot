@@ -136,7 +136,7 @@ app.post('/convert', function(req, res){
                     let finalDockerCMD = dockerCMD.replace('TEMP_DIR_NAME', `${tempDirRoot}${id}`);
                     finalDockerCMD = finalDockerCMD.replace('OUTPUT_SCALE', '5.0'); //'5.0' instead validScalesInternal[validScales.indexOf(req.body.outputScale)]
 
-                    const fileFormat = 'jpg'; //'svg' instead req.body.outputFormat.toLowerCase()
+                    const fileFormat = 'png'; //'png' instead req.body.outputFormat.toLowerCase()
 
                     // Asynchronously compile and render the LaTeX to an image
                     shell.exec(finalDockerCMD, {async: true}, function(){
