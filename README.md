@@ -15,7 +15,7 @@ Only when I run it be the service accessible at [https://pf.kakao.com/_EaxixlK](
 
 ### Operating system
 
-I used Ubuntu 20.04. Other Linux distributions should work without problems.
+I used Ubuntu 18.04. Other Linux distributions should work without problems.
 
 ### Docker
 
@@ -33,19 +33,19 @@ $ docker pull blang/latex:ubuntu
 
 ### Node.js
 
-I installed Node.js via nvm lts v14.15.1, anything newer should be fine.
+I installed Node.js via nvm lts v10.14.2, anything newer should be fine.
 
 After cloning or downloading this project, run the following to install local dependencies from npm:
 
 ```
-$ cd my_path_of_latex2image-web
+$ cd my_path_of_kakaotalk-latexbot
 $ npm install
 ```
 
 And install two global packages.
 
 ```
-$ npm install -g svgexport
+$ npm install -g svg-png-converter
 $ npm install -g imagemin-cli
 ```
 

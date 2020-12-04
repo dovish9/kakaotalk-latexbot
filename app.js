@@ -28,7 +28,7 @@ const dockerImageName = 'blang/latex:ubuntu'; // https://github.com/blang/latex-
 const dockerCMD = `cd TEMP_DIR_NAME && exec docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data "${dockerImageName}" /bin/sh -c "${latexCMD} && ${dvisvgmCMD}"`;
 
 // Commands to convert .svg to .png/.jpg and compress
-const svgToImageCMD = 'svgexport SVG_FILE_NAME OUT_FILE_NAME';
+const svgToImageCMD = 'svg2png --input SVG_FILE_NAME --output OUT_FILE_NAME --format png';
 const imageMinCMD = 'imagemin IN_FILE_NAME > OUT_FILE_NAME';
 
 const fontSize = 12;
@@ -105,14 +105,14 @@ app.post('/convert', function(req, res){
     else{
         requestedString = req.body.userRequest.utterance;
     }
-    if(requestedString=="help"){
-        res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'You can render latex equation to image by typing, tex [equation]. If you want source code, type, source.'));
+    if(requestedString=="help" || requestedString=="도움말"){
+        res.status(200).send(textMessage.replace('TEXT_MESSAGE', '〈tex [equation]〉을 입력하면 라텍 수식을 이미지로 변환할 수 있습니다. 소스 코드를 보고 싶다면, 〈깃허브〉를 입력하세요.'));
     }
-    else if(requestedString=="source"){
+    else if(requestedString=="github" || requestedString=="깃허브"){
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'https://github.com/gkm42917/kakaotalk-latexbot'));
     }
     else if(requestedString=="tex"){
-        res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'Put equation whatever you want.'));
+        res.status(200).send(textMessage.replace('TEXT_MESSAGE', '원하는 수식을 뒤에 넣어주세요.'));
     }
     else if(requestedString.slice(0, 4)=="tex "){
         // Ensure valid inputs
@@ -149,9 +149,6 @@ app.post('/convert', function(req, res){
                                 // Convert svg to png/jpg
                                 let finalSvgToImageCMD = svgToImageCMD.replace('SVG_FILE_NAME', `${tempDirRoot}${id}/equation.svg`);
                                 finalSvgToImageCMD = finalSvgToImageCMD.replace('OUT_FILE_NAME', `${tempDirRoot}${id}/equation.${fileFormat}`);
-                                if(fileFormat==='jpg'){ // Add a white background for jpg images
-                                    finalSvgToImageCMD += ' "svg {background: white}"';
-                                }
                                 shell.exec(finalSvgToImageCMD);
 
                                 // Ensure conversion was successful; eg. fails if `svgexport` or `imagemin` is not installed
@@ -167,12 +164,12 @@ app.post('/convert', function(req, res){
                                     result.imageURL = `${httpOutputURL}img-${id}.${fileFormat}`;
                                 }
                                 else{
-                                    result.error = `Error converting SVG file to ${fileFormat.toUpperCase()} image.`;
+                                    result.error = `Error SVG 파일을 ${fileFormat.toUpperCase()} 이미지로 변환할 수 없습니다.`;
                                 }
                             }
                         }
                         else{
-                            result.error = 'Error converting LaTeX to image. Please ensure the input is valid.';
+                            result.error = 'Error 라텍을 이미지로 변환할 수 없습니다. 입력 값이 유효한지 확인하세요.';
                         }
 
                         shell.rm('-r', `${tempDirRoot}${id}`); // Delete temporary files for this conversion
@@ -188,19 +185,19 @@ app.post('/convert', function(req, res){
 
                 }
                 else{
-                    res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'Invalid image format.'));
+                    res.status(200).send(textMessage.replace('TEXT_MESSAGE', '유효하지 않은 이미지 포맷입니다.'));
                 }
             }
             else{
-                res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'Invalid scale.'));
+                res.status(200).send(textMessage.replace('TEXT_MESSAGE', '유효하지 않은 크기입니다.'));
             }
         }
         else{
-            res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'No LaTeX input provided.'));
+            res.status(200).send(textMessage.replace('TEXT_MESSAGE', '라텍이 입력되지 않았습니다.'));
         }
     }
     else{
-        res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'There are no features other than latex2image.'));
+        res.status(200).send(textMessage.replace('TEXT_MESSAGE', '아직 라텍 수식 변환 이외의 기능은 없습니다.'));
     }
 });
 
