@@ -2,7 +2,7 @@ const fs = require('fs');
 const shell = require('shelljs');
 const express = require('express');
 
-const local = '' //local's IP
+const local = ''; //local's external IP
 const port = 3001;
 
 const staticDir = 'static/';
@@ -28,7 +28,7 @@ const dockerImageName = 'blang/latex:ubuntu'; // https://github.com/blang/latex-
 const dockerCMD = `cd TEMP_DIR_NAME && exec docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data "${dockerImageName}" /bin/sh -c "${latexCMD} && ${dvisvgmCMD}"`;
 
 // Commands to convert .svg to .png/.jpg and compress
-const svgToImageCMD = 'svg2png --input SVG_FILE_NAME --output OUT_FILE_NAME --format png';
+const svgToImageCMD = 'svgexport SVG_FILE_NAME OUT_FILE_NAME';
 const imageMinCMD = 'imagemin IN_FILE_NAME > OUT_FILE_NAME';
 
 const fontSize = 12;
@@ -105,16 +105,16 @@ app.post('/convert', function(req, res){
     else{
         requestedString = req.body.userRequest.utterance;
     }
-    if(requestedString=="help" || requestedString=="도움말"){
+    if(requestedString=="help" || requestedString=="Help" || requestedString=="도움말"){
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', '〈tex [equation]〉을 입력하면 라텍 수식을 이미지로 변환할 수 있습니다. 소스 코드를 보고 싶다면, 〈깃허브〉를 입력하세요.'));
     }
-    else if(requestedString=="github" || requestedString=="깃허브"){
+    else if(requestedString=="github" || requestedString=="Github" || requestedString=="깃허브"){
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'https://github.com/gkm42917/kakaotalk-latexbot'));
     }
-    else if(requestedString=="tex"){
+    else if(requestedString=="tex" || requestedString=="Tex"){
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', '원하는 수식을 뒤에 넣어주세요.'));
     }
-    else if(requestedString.slice(0, 4)=="tex "){
+    else if(requestedString.slice(0, 4)=="tex " || requestedString.slice(0, 4)=="Tex "){
         // Ensure valid inputs
         if(requestedString.slice(4)!=""){ //if(req.body.latexInput)
             if(true){ //if(validScales.includes(req.body.outputScale))
@@ -134,9 +134,9 @@ app.post('/convert', function(req, res){
                     let result = {};
 
                     let finalDockerCMD = dockerCMD.replace('TEMP_DIR_NAME', `${tempDirRoot}${id}`);
-                    finalDockerCMD = finalDockerCMD.replace('OUTPUT_SCALE', '5.0'); //'5.0' instead validScalesInternal[validScales.indexOf(req.body.outputScale)]
+                    finalDockerCMD = finalDockerCMD.replace('OUTPUT_SCALE', '10.0'); //'10.0' instead validScalesInternal[validScales.indexOf(req.body.outputScale)]
 
-                    const fileFormat = 'png'; //'png' instead req.body.outputFormat.toLowerCase()
+                    const fileFormat = 'jpg'; //'jpg' instead req.body.outputFormat.toLowerCase()
 
                     // Asynchronously compile and render the LaTeX to an image
                     shell.exec(finalDockerCMD, {async: true}, function(){
@@ -149,6 +149,9 @@ app.post('/convert', function(req, res){
                                 // Convert svg to png/jpg
                                 let finalSvgToImageCMD = svgToImageCMD.replace('SVG_FILE_NAME', `${tempDirRoot}${id}/equation.svg`);
                                 finalSvgToImageCMD = finalSvgToImageCMD.replace('OUT_FILE_NAME', `${tempDirRoot}${id}/equation.${fileFormat}`);
+                                if(fileFormat==='jpg'){ // Add a white background for jpg images
+                                    finalSvgToImageCMD += ' "svg {background: white}"';
+                                }
                                 shell.exec(finalSvgToImageCMD);
 
                                 // Ensure conversion was successful; eg. fails if `svgexport` or `imagemin` is not installed

@@ -15,7 +15,7 @@ Only when I run it be the service accessible at [https://pf.kakao.com/_EaxixlK](
 
 ### Operating system
 
-I used Ubuntu 18.04. Other Linux distributions should work without problems.
+I used Ubuntu 20.04. Other Linux distributions should work without problems.
 
 ### Docker
 
@@ -45,18 +45,23 @@ $ npm install
 And install two global packages.
 
 ```
-$ npm install -g svg-png-converter
+$ npm install -g svgexport
 $ npm install -g imagemin-cli
 ```
 
 ## How to run
 
-change here as yours:
+Change here as yours:
 ```javascript
-const local = '' //write local's IP
+const local = ''; //write local's external IP
 ```
 
-and run:
+Default port is 3001. You can change it as you want:
+```javascript
+const port = 3001;
+```
+
+And run:
 
 ```
 $ node app.js
