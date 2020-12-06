@@ -3,13 +3,15 @@
 
 <img src = "./screenshots/latexbot-profile.png" width="50%">
 
-It does not work independently. Only with kakao open builder.
+It does not work independently. Only with [kakao open builder](https://i.kakao.com/).
 
 I made it by referring to [Joeraut](https://joeraut.com/)'s [work](https://github.com/joeraut/latex2image-web).
 
 ## Live Demo
 
 Only when I run it be the service accessible at [https://pf.kakao.com/_EaxixlK](https://pf.kakao.com/_EaxixlK).
+
+<img src = "./screenshots/example.jpg" width="40%">
 
 ## Requirements
 
@@ -33,7 +35,19 @@ $ docker pull blang/latex:ubuntu
 
 ### Node.js
 
-I installed Node.js via nvm lts v10.14.2, anything newer should be fine.
+I installed Node.js v10.14.2 via nvm, anything newer should be fine.
+
+In my case, I followed the step [here](https://github.com/nvm-sh/nvm#installation), and type:
+
+```
+$ nvm install 10.14.2
+```
+
+You can check version of Node.js:
+
+```
+$ node -v
+```
 
 After cloning or downloading this project, run the following to install local dependencies from npm:
 
