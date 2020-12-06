@@ -2,6 +2,10 @@ const fs = require('fs');
 const shell = require('shelljs');
 const express = require('express');
 
+//date-utils
+require('date-utils');
+var date = new Date();
+
 const local = ''; //local's external IP
 const port = 3001;
 
@@ -9,6 +13,7 @@ const staticDir = 'static/';
 const tempDirRoot = 'temp/';
 const outputDir = 'output/';
 const httpOutputURL = 'output/';
+const screenshotsDir = 'screenshots/';
 
 // Checklist of valid formats and scales, to verify form values are correct
 const validFormats = ['SVG', 'PNG', 'JPG'];
@@ -69,50 +74,153 @@ app.use(bodyParser.urlencoded({extended: true}));
 // Allow static html files and output files to be accessible
 app.use('/', express.static(staticDir));
 app.use('/output', express.static(outputDir));
+app.use('/screenshots', express.static(screenshotsDir));
 
 // POST call for LaTeX to image conversion. Convert and return image URL or error message
 app.post('/convert', function(req, res){
-    // Image message format
-    let imageMessage = JSON.stringify({
-        version: "2.0",
-        template: {
-          outputs: [
+    // Text message for invalid inputs
+    let textMessage = JSON.stringify({
+        "version": "2.0",
+        "template": {
+          "outputs": [
             {
-              simpleImage: {
-                imageUrl: "IMAGE_URL",
-                altText: "IMAGE_ID"
+              "simpleText": {
+                "text": "TEXT_MESSAGE"
               }
             }
           ]
         }
       });
-    // Text message for invalid inputs
-    let textMessage = JSON.stringify({
-      version: "2.0",
-      template: {
-        outputs: [
-          {
-            simpleText: {
-              text: "TEXT_MESSAGE"
+    // Image message format
+    let imageMessage = JSON.stringify({
+        "version": "2.0",
+        "template": {
+          "outputs": [
+            {
+              "simpleImage": {
+                "imageUrl": "IMAGE_URL",
+                "altText": "url이 유효하지 않습니다."
+              }
             }
-          }
-        ]
-      }
-    });
-    if(req.body.userRequest.utterance.slice(-1)=="\n"){
-        requestedString = req.body.userRequest.utterance.slice(0, -1);
+          ]
+        }
+      });
+    // Card message with a text button
+    let buttonCardMessage = JSON.stringify({
+        "version": "2.0",
+        "template": {
+          "outputs": [
+            {
+              "basicCard": {
+                "title": "TITLE",
+                "description": "DESCRIPTION",
+                "thumbnail": {
+                  "imageUrl": "THUMBNAIL_URL"
+                },
+                "buttons": [
+                  {
+                    "action": "message",
+                    "label": "BUTTON_NAME",
+                    "messageText": "MESSAGE_TEXT"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      });
+    // Card Message with a url button
+    let urlCardMessage = JSON.stringify({
+        "version": "2.0",
+        "template": {
+          "outputs": [
+            {
+              "basicCard": {
+                "title": "TITLE",
+                "description": "DESCRIPTION",
+                "thumbnail": {
+                  "imageUrl": "THUMBNAIL_URL"
+                },
+                "buttons": [
+                  {
+                    "action":  "webLink",
+                    "label": "BUTTON_NAME",
+                    "webLinkUrl": "WEB_URL"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      });
+    let uq = req.body.userRequest
+    if(uq.utterance.slice(-1)=="\n"){
+        requestedString = uq.utterance.slice(0, -1);
     }
     else{
-        requestedString = req.body.userRequest.utterance;
+        requestedString = uq.utterance;
     }
-    if(requestedString=="help" || requestedString=="Help" || requestedString=="도움말"){
-        res.status(200).send(textMessage.replace('TEXT_MESSAGE', '〈tex [equation]〉을 입력하면 라텍 수식을 이미지로 변환할 수 있습니다. 소스 코드를 보고 싶다면, 〈깃허브〉를 입력하세요.'));
+    if(requestedString=="welcome" || requestedString=="Welcome" || requestedString=="웰컴"){
+        res.status(200).send(buttonCardMessage.replace('TITLE', 'Hello, world!').replace('DESCRIPTION', '다음과 같이 입력해서 라텍 수식을 이미지로 변환할 수 있습니다.\\n〈tex [equation]〉\\n도움말을 원하면 〈도움말〉을 입력해주세요.')
+        .replace('THUMBNAIL_URL', local+':'+port+'/'+screenshotsDir+'latexbot-profile.png').replace('BUTTON_NAME', '도움말').replace('MESSAGE_TEXT', '도움말'));
+        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
+    }
+    else if(requestedString=="help" || requestedString=="Help" || requestedString=="도움말"){
+        res.status(200).send(urlCardMessage.replace('TITLE', '도움말')
+        .replace('DESCRIPTION', '〈tex [equation]〉을 입력하면 라텍 수식을 이미지로 변환할 수 있습니다.\\n예시를 보고 싶다면, 〈예시〉를 입력하세요.\\n소스 코드를 보고 싶다면, 〈깃허브〉를 입력하세요.\\n라텍 문법에 대해 알고 싶다면, 아래 버튼을 누르세요. 위키백과로 연결됩니다.')
+        .replace('THUMBNAIL_URL', local+':'+port+'/'+screenshotsDir+'latexbot-banner.jpg').replace('BUTTON_NAME', 'TeX 문법')
+        .replace('WEB_URL', 'https://ko.wikipedia.org/wiki/%EC%9C%84%ED%82%A4%EB%B0%B1%EA%B3%BC:TeX_%EB%AC%B8%EB%B2%95'));
+        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
     }
     else if(requestedString=="github" || requestedString=="Github" || requestedString=="깃허브"){
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'https://github.com/gkm42917/kakaotalk-latexbot'));
+        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
+    }
+    else if(requestedString=="example" || requestedString=="Example" || requestedString=="ex" || requestedString=="Ex" || requestedString=="예시"){
+        res.status(200).send(JSON.stringify({
+          "version": "2.0",
+          "template": {
+            "outputs": [
+              {
+                "simpleText": {
+                  "text": "예시 목록"
+                }
+              }
+            ],
+            "quickReplies": [
+              {
+                "messageText": "tex ax^2+bx+c = 0",
+                "action": "message",
+                "label": "이차방정식"
+              },
+              {
+                "messageText": "tex \\sin2\\theta = 2\\sin\\theta\\cos\\theta",
+                "action": "message",
+                "label": "삼각함수 덧셈 정리"
+              },
+              {
+                "messageText": "tex \\frac{a+b}{2} \\geq \\sqrt{ab}",
+                "action": "message",
+                "label": "산술-기하 평균 부등식"
+              },
+              {
+                "messageText": "tex \\sum_{k=1}^na_n",
+                "action": "message",
+                "label": "수열의 합"
+              },
+              {
+                "messageText": "tex (a,p)=1 \\Rightarrow a^{\\varphi(p)} \\equiv 1 \\pmod{p}",
+                "action": "message",
+                "label": "오일러 정리"
+              }
+            ]
+          }
+        }));
+        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
     }
     else if(requestedString=="tex" || requestedString=="Tex"){
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', '원하는 수식을 뒤에 넣어주세요.'));
+        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
     }
     else if(requestedString.slice(0, 4)=="tex " || requestedString.slice(0, 4)=="Tex "){
         // Ensure valid inputs
@@ -178,29 +286,35 @@ app.post('/convert', function(req, res){
                         shell.rm('-r', `${tempDirRoot}${id}`); // Delete temporary files for this conversion
 
                         if(result.error==undefined){
-                            console.log('equation "'+requestedString.slice(4)+'" is converted in '+local+':3001/'+result.imageURL);
-                            res.status(200).send(imageMessage.replace('IMAGE_URL', local+':3001/'+result.imageURL).replace('IMAGE_ID', id));
+                            console.log('equation "'+requestedString.slice(4)+'" is converted in '+local+':'+port+'/'+result.imageURL);
+                            res.status(200).send(imageMessage.replace('IMAGE_URL', local+':'+port+'/'+result.imageURL));
+                            appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", texUrl: "+local+':'+port+'/'+result.imageURL+"\n");
                         }
                         else{
                             res.status(200).send(textMessage.replace('TEXT_MESSAGE', result.error));
+                            appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", errorMessage: "+result.error+"\n");
                         }
                     });
 
                 }
                 else{
                     res.status(200).send(textMessage.replace('TEXT_MESSAGE', '유효하지 않은 이미지 포맷입니다.'));
+                    appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", errorMessage: 유효하지 않은 이미지 포맷입니다.\n");
                 }
             }
             else{
                 res.status(200).send(textMessage.replace('TEXT_MESSAGE', '유효하지 않은 크기입니다.'));
+                appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", errorMessage: 유효하지 않은 크기입니다.\n");
             }
         }
         else{
             res.status(200).send(textMessage.replace('TEXT_MESSAGE', '라텍이 입력되지 않았습니다.'));
+            appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", errorMessage: 라텍이 입력되지 않았습니다.\n");
         }
     }
     else{
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', '아직 라텍 수식 변환 이외의 기능은 없습니다.'));
+        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
     }
 });
 
@@ -215,4 +329,11 @@ function generateID(){ // Generate a random 16-char hexadecimal ID
         output += '0123456789abcdef'.charAt(Math.floor(Math.random() * 16));
     }
     return output;
+}
+
+function appendLog(data){
+    fs.appendFile('log.txt', data, function(err){
+        if(err) throw err;
+        console.log(data);
+    });
 }
