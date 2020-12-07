@@ -154,29 +154,30 @@ app.post('/convert', function(req, res){
         }
       });
     let uq = req.body.userRequest
-    if(uq.utterance.slice(-1)=="\n"){
+    let commonLog = 'timezone: '+uq.timezone+', time: '+date.toFormat('YYYY-MM-DD HH24:MI:SS')+', lang: '+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+', utterance: '+requestedString;
+    if(uq.utterance.slice(-1)=='\n'){
         requestedString = uq.utterance.slice(0, -1);
     }
     else{
         requestedString = uq.utterance;
     }
-    if(requestedString=="welcome" || requestedString=="Welcome" || requestedString=="웰컴"){
+    if(requestedString=='welcome' || requestedString=='Welcome' || requestedString=='웰컴'){
         res.status(200).send(buttonCardMessage.replace('TITLE', 'Hello, world!').replace('DESCRIPTION', '다음과 같이 입력해서 라텍 수식을 이미지로 변환할 수 있습니다.\\n〈tex [equation]〉\\n도움말을 원하면 〈도움말〉을 입력해주세요.')
         .replace('THUMBNAIL_URL', local+':'+port+'/'+screenshotsDir+'latexbot-profile.png').replace('BUTTON_NAME', '도움말').replace('MESSAGE_TEXT', '도움말'));
-        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
+        appendLog('{'+commonLog+'},\n');
     }
-    else if(requestedString=="help" || requestedString=="Help" || requestedString=="도움말"){
+    else if(requestedString=='help' || requestedString=='Help' || requestedString=='도움말'){
         res.status(200).send(urlCardMessage.replace('TITLE', '도움말')
         .replace('DESCRIPTION', '〈tex [equation]〉을 입력하면 라텍 수식을 이미지로 변환할 수 있습니다.\\n예시를 보고 싶다면, 〈예시〉를 입력하세요.\\n소스 코드를 보고 싶다면, 〈깃허브〉를 입력하세요.\\n라텍 문법에 대해 알고 싶다면, 아래 버튼을 누르세요. 위키백과로 연결됩니다.')
         .replace('THUMBNAIL_URL', local+':'+port+'/'+screenshotsDir+'latexbot-banner.jpg').replace('BUTTON_NAME', 'TeX 문법')
         .replace('WEB_URL', 'https://ko.wikipedia.org/wiki/%EC%9C%84%ED%82%A4%EB%B0%B1%EA%B3%BC:TeX_%EB%AC%B8%EB%B2%95'));
-        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
+        appendLog('{'+commonLog+'},\n');
     }
-    else if(requestedString=="github" || requestedString=="Github" || requestedString=="깃허브"){
+    else if(requestedString=='github' || requestedString=='Github' || requestedString=='깃허브'){
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', 'https://github.com/gkm42917/kakaotalk-latexbot'));
-        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
+        appendLog('{'+commonLog+'},\n');
     }
-    else if(requestedString=="example" || requestedString=="Example" || requestedString=="ex" || requestedString=="Ex" || requestedString=="예시"){
+    else if(requestedString=='example' || requestedString=='Example' || requestedString=='ex' || requestedString=='Ex' || requestedString=='예시'){
         res.status(200).send(JSON.stringify({
           "version": "2.0",
           "template": {
@@ -209,20 +210,20 @@ app.post('/convert', function(req, res){
                 "label": "수열의 합"
               },
               {
-                "messageText": "tex (a,p)=1 \\Rightarrow a^{\\varphi(p)} \\equiv 1 \\pmod{p}",
+                "messageText": "tex (a,n)=1 \\Longrightarrow a^{\\varphi(n)} \\equiv 1 \\pmod{n}",
                 "action": "message",
                 "label": "오일러 정리"
               }
             ]
           }
         }));
-        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
+        appendLog('{'+commonLog+'},\n');
     }
-    else if(requestedString=="tex" || requestedString=="Tex"){
+    else if(requestedString=='tex' || requestedString=='Tex'){
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', '원하는 수식을 뒤에 넣어주세요.'));
-        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
+        appendLog('{'+commonLog+'},\n');
     }
-    else if(requestedString.slice(0, 4)=="tex " || requestedString.slice(0, 4)=="Tex "){
+    else if(requestedString.slice(0, 4)=='tex ' || requestedString.slice(0, 4)=='Tex '){
         // Ensure valid inputs
         if(requestedString.slice(4)!=""){ //if(req.body.latexInput)
             if(true){ //if(validScales.includes(req.body.outputScale))
@@ -288,33 +289,33 @@ app.post('/convert', function(req, res){
                         if(result.error==undefined){
                             console.log('equation "'+requestedString.slice(4)+'" is converted in '+local+':'+port+'/'+result.imageURL);
                             res.status(200).send(imageMessage.replace('IMAGE_URL', local+':'+port+'/'+result.imageURL));
-                            appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", texUrl: "+local+':'+port+'/'+result.imageURL+"\n");
+                            appendLog('{'+commonLog+", texUrl: "+local+':'+port+'/'+result.imageURL+'},\n');
                         }
                         else{
                             res.status(200).send(textMessage.replace('TEXT_MESSAGE', result.error));
-                            appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", errorMessage: "+result.error+"\n");
+                            appendLog('{'+commonLog+", errorMessage: "+result.error+'},\n');
                         }
                     });
 
                 }
                 else{
                     res.status(200).send(textMessage.replace('TEXT_MESSAGE', '유효하지 않은 이미지 포맷입니다.'));
-                    appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", errorMessage: 유효하지 않은 이미지 포맷입니다.\n");
+                    appendLog(commonLog+", errorMessage: 유효하지 않은 이미지 포맷입니다.\n");
                 }
             }
             else{
                 res.status(200).send(textMessage.replace('TEXT_MESSAGE', '유효하지 않은 크기입니다.'));
-                appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", errorMessage: 유효하지 않은 크기입니다.\n");
+                appendLog(commonLog+", errorMessage: 유효하지 않은 크기입니다.\n");
             }
         }
         else{
             res.status(200).send(textMessage.replace('TEXT_MESSAGE', '라텍이 입력되지 않았습니다.'));
-            appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+", errorMessage: 라텍이 입력되지 않았습니다.\n");
+            appendLog(commonLog+", errorMessage: 라텍이 입력되지 않았습니다.\n");
         }
     }
     else{
         res.status(200).send(textMessage.replace('TEXT_MESSAGE', '아직 라텍 수식 변환 이외의 기능은 없습니다.'));
-        appendLog("timezone: "+uq.timezone+", time: "+date.toFormat('YYYY-MM-DD HH24:MI:SS')+", lang: "+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+", utterance: "+requestedString+"\n");
+        appendLog('{'+commonLog+'},\n');
     }
 });
 
