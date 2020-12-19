@@ -154,13 +154,13 @@ app.post('/convert', function(req, res){
         }
       });
     let uq = req.body.userRequest
-    let commonLog = 'timezone: '+uq.timezone+', time: '+date.toFormat('YYYY-MM-DD HH24:MI:SS')+', lang: '+uq.lang+', user_id: '+uq.user.id+', plusfriendUserKey: '+uq.user.properties.plusfriendUserKey+', utterance: '+requestedString;
     if(uq.utterance.slice(-1)=='\n'){
         requestedString = uq.utterance.slice(0, -1);
     }
     else{
         requestedString = uq.utterance;
     }
+    let commonLog = 'timezone: "'+uq.timezone+'", time: "'+date.toFormat('YYYY-MM-DD HH24:MI:SS')+'", lang: "'+uq.lang+'", user_id: "'+uq.user.id+'", plusfriendUserKey: "'+uq.user.properties.plusfriendUserKey+'", utterance: "'+convertNewline(requestedString)+'"';
     if(requestedString=='welcome' || requestedString=='Welcome' || requestedString=='웰컴'){
         res.status(200).send(buttonCardMessage.replace('TITLE', 'Hello, world!').replace('DESCRIPTION', '다음과 같이 입력해서 라텍 수식을 이미지로 변환할 수 있습니다.\\n〈tex [equation]〉\\n도움말을 원하면 〈도움말〉을 입력해주세요.')
         .replace('THUMBNAIL_URL', local+':'+port+'/'+screenshotsDir+'latexbot-profile.png').replace('BUTTON_NAME', '도움말').replace('MESSAGE_TEXT', '도움말'));
@@ -225,7 +225,7 @@ app.post('/convert', function(req, res){
     }
     else if(requestedString.slice(0, 4)=='tex ' || requestedString.slice(0, 4)=='Tex '){
         // Ensure valid inputs
-        if(requestedString.slice(4)!=""){ //if(req.body.latexInput)
+        if(requestedString.slice(4)!=''){ //if(req.body.latexInput)
             if(true){ //if(validScales.includes(req.body.outputScale))
                 if(true){ //if(validFormats.includes(req.body.outputFormat))
                     const id = generateID(); // Generate unique ID for filename
@@ -289,28 +289,28 @@ app.post('/convert', function(req, res){
                         if(result.error==undefined){
                             console.log('equation "'+requestedString.slice(4)+'" is converted in '+local+':'+port+'/'+result.imageURL);
                             res.status(200).send(imageMessage.replace('IMAGE_URL', local+':'+port+'/'+result.imageURL));
-                            appendLog('{'+commonLog+", texUrl: "+local+':'+port+'/'+result.imageURL+'},\n');
+                            appendLog('{'+commonLog+', texUrl: "'+local+':'+port+'/'+result.imageURL+'"},\n');
                         }
                         else{
                             res.status(200).send(textMessage.replace('TEXT_MESSAGE', result.error));
-                            appendLog('{'+commonLog+", errorMessage: "+result.error+'},\n');
+                            appendLog('{'+commonLog+', errorMessage: "'+result.error+'"},\n');
                         }
                     });
 
                 }
                 else{
                     res.status(200).send(textMessage.replace('TEXT_MESSAGE', '유효하지 않은 이미지 포맷입니다.'));
-                    appendLog(commonLog+", errorMessage: 유효하지 않은 이미지 포맷입니다.\n");
+                    appendLog('{'+commonLog+', errorMessage: "유효하지 않은 이미지 포맷입니다."},\n');
                 }
             }
             else{
                 res.status(200).send(textMessage.replace('TEXT_MESSAGE', '유효하지 않은 크기입니다.'));
-                appendLog(commonLog+", errorMessage: 유효하지 않은 크기입니다.\n");
+                appendLog('{'+commonLog+', errorMessage: "유효하지 않은 이미지 크기입니다."},\n');
             }
         }
         else{
             res.status(200).send(textMessage.replace('TEXT_MESSAGE', '라텍이 입력되지 않았습니다.'));
-            appendLog(commonLog+", errorMessage: 라텍이 입력되지 않았습니다.\n");
+            appendLog('{'+commonLog+', errorMessage: "라텍이 입력되지 않았습니다.",}\n');
         }
     }
     else{
@@ -335,6 +335,9 @@ function generateID(){ // Generate a random 16-char hexadecimal ID
 function appendLog(data){
     fs.appendFile('log.txt', data, function(err){
         if(err) throw err;
-        console.log(data);
     });
+}
+
+function convertNewline(data){
+    return data.replace(/\n/g, '\\n');
 }
