@@ -162,13 +162,13 @@ app.post('/convert', function(req, res){
     }
     let commonLog = 'timezone: "'+uq.timezone+'", time: "'+date.toFormat('YYYY-MM-DD HH24:MI:SS')+'", lang: "'+uq.lang+'", user_id: "'+uq.user.id+'", plusfriendUserKey: "'+uq.user.properties.plusfriendUserKey+'", utterance: "'+convertNewline(requestedString)+'"';
     if(requestedString=='welcome' || requestedString=='Welcome' || requestedString=='웰컴'){
-        res.status(200).send(buttonCardMessage.replace('TITLE', 'Hello, world!').replace('DESCRIPTION', '다음과 같이 입력해서 라텍 수식을 이미지로 변환할 수 있습니다.\\n〈tex [equation]〉\\n도움말을 원하면 〈도움말〉을 입력해주세요.')
+        res.status(200).send(buttonCardMessage.replace('TITLE', 'Hello, world!').replace('DESCRIPTION', '도움말을 원하면 〈도움말〉을 입력해주세요.\\n다음과 같이 입력해서 라텍 수식을 이미지로 변환할 수 있습니다.\\n〈tex [equation]〉\\n(괄호는 빼고 입력하세요.)')
         .replace('THUMBNAIL_URL', local+':'+port+'/'+screenshotsDir+'latexbot-profile.png').replace('BUTTON_NAME', '도움말').replace('MESSAGE_TEXT', '도움말'));
         appendLog('{'+commonLog+'},\n');
     }
     else if(requestedString=='help' || requestedString=='Help' || requestedString=='도움말'){
         res.status(200).send(urlCardMessage.replace('TITLE', '도움말')
-        .replace('DESCRIPTION', '〈tex [equation]〉을 입력하면 라텍 수식을 이미지로 변환할 수 있습니다.\\n예시를 보고 싶다면, 〈예시〉를 입력하세요.\\n소스 코드를 보고 싶다면, 〈깃허브〉를 입력하세요.\\n라텍 문법에 대해 알고 싶다면, 아래 버튼을 누르세요. 위키백과로 연결됩니다.')
+        .replace('DESCRIPTION', '〈tex [equation]〉을 입력하면 [equation]이 수식 이미지로 변환됩니다.\\n예시를 보고 싶다면, 〈예시〉를 입력하세요.\\n소스 코드를 보고 싶다면, 〈깃허브〉를 입력하세요.\\n라텍 문법에 대해 알고 싶다면, 아래 버튼을 누르세요. 위키백과로 연결됩니다.')
         .replace('THUMBNAIL_URL', local+':'+port+'/'+screenshotsDir+'latexbot-banner.jpg').replace('BUTTON_NAME', 'TeX 문법')
         .replace('WEB_URL', 'https://ko.wikipedia.org/wiki/%EC%9C%84%ED%82%A4%EB%B0%B1%EA%B3%BC:TeX_%EB%AC%B8%EB%B2%95'));
         appendLog('{'+commonLog+'},\n');
