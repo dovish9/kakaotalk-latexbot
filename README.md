@@ -1,5 +1,7 @@
 # kakaotalk-latexbot
-`latexbot's skill server for kakao open builder`
+`Not working`
+
+Latexbot's skill server for kakao open builder
 
 <img src = "./screenshots/latexbot-profile.png" width="50%">
 
